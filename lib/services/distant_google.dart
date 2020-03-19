@@ -1,8 +1,7 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:core';
-import 'dart:io';
 
+import 'package:dio/dio.dart';
 import 'package:geocoder/model.dart';
 import 'package:geocoder/services/base.dart';
 
@@ -14,10 +13,10 @@ class GoogleGeocoding implements Geocoding {
   final String apiKey;
   final String language;
 
-  final HttpClient _httpClient;
+  final Dio _dio;
 
   GoogleGeocoding(this.apiKey, { this.language }) :
-    _httpClient = HttpClient(),
+    _dio = Dio(),
     assert(apiKey != null, "apiKey must not be null");
 
   Future<List<Address>> findAddressesFromCoordinates(Coordinates coordinates) async  {
@@ -32,13 +31,9 @@ class GoogleGeocoding implements Geocoding {
   }
 
   Future<List<Address>> _send(String url) async {
-    //print("Sending $url...");
     final uri = Uri.parse(url);
-    final request = await this._httpClient.getUrl(uri);
-    final response = await request.close();
-    final responseBody = await utf8.decoder.bind(response).join();
-    //print("Received $responseBody...");
-    var data = jsonDecode(responseBody);
+    final response = await _dio.getUri(uri);
+    var data = response.data;
 
     var results = data["results"];
 
